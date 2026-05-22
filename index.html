@@ -2,13 +2,22 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Pong Game</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
         }
 
         body {
@@ -18,31 +27,39 @@
             min-height: 100vh;
             background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
             font-family: 'Arial', sans-serif;
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
         }
 
         .container {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 20px;
+            gap: 15px;
+            width: 100%;
+            height: 100%;
+            padding: 10px;
+            overflow-y: auto;
         }
 
         h1 {
             color: #fff;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-            font-size: 2.5em;
-            margin-bottom: 10px;
+            font-size: clamp(1.5em, 5vw, 2.5em);
+            margin-bottom: 5px;
+            flex-shrink: 0;
         }
 
         .scoreboard {
             display: flex;
             justify-content: space-around;
-            width: 400px;
+            width: 100%;
+            max-width: 400px;
             background: rgba(255, 255, 255, 0.1);
-            padding: 20px;
+            padding: clamp(10px, 3vw, 20px);
             border-radius: 10px;
             backdrop-filter: blur(10px);
             border: 2px solid rgba(255, 255, 255, 0.2);
+            flex-shrink: 0;
         }
 
         .score-item {
@@ -51,13 +68,13 @@
         }
 
         .score-label {
-            font-size: 1.2em;
-            margin-bottom: 10px;
+            font-size: clamp(0.9em, 3vw, 1.2em);
+            margin-bottom: 8px;
             font-weight: bold;
         }
 
         .score-value {
-            font-size: 3em;
+            font-size: clamp(2em, 8vw, 3em);
             font-weight: bold;
             color: #00ff00;
             text-shadow: 0 0 10px #00ff00;
@@ -69,22 +86,63 @@
             border: 3px solid #00ff00;
             box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
             cursor: none;
+            max-width: 100%;
+            height: auto;
+            aspect-ratio: 2 / 1;
+            flex-grow: 1;
+            object-fit: contain;
+            touch-action: none;
         }
 
         .info {
             color: #fff;
             text-align: center;
-            font-size: 0.9em;
-            line-height: 1.6;
+            font-size: clamp(0.7em, 2vw, 0.9em);
+            line-height: 1.4;
+            flex-shrink: 0;
+            margin-bottom: 10px;
         }
 
         .info p {
-            margin: 5px 0;
+            margin: 3px 0;
         }
 
         .highlight {
             color: #00ff00;
             font-weight: bold;
+        }
+
+        /* Mobile-specific controls */
+        .mobile-controls {
+            display: none;
+            width: 100%;
+            max-width: 400px;
+            gap: 10px;
+            flex-shrink: 0;
+            margin-bottom: 10px;
+        }
+
+        .mobile-controls.active {
+            display: flex;
+        }
+
+        .control-btn {
+            flex: 1;
+            padding: 15px;
+            background: rgba(0, 255, 0, 0.2);
+            border: 2px solid #00ff00;
+            color: #00ff00;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: clamp(0.8em, 2.5vw, 1em);
+            transition: all 0.2s;
+            active: 0;
+        }
+
+        .control-btn:active {
+            background: rgba(0, 255, 0, 0.5);
+            transform: scale(0.95);
         }
 
         .game-over {
@@ -93,32 +151,35 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.9);
-            padding: 40px;
+            background: rgba(0, 0, 0, 0.95);
+            padding: clamp(20px, 5vw, 40px);
             border-radius: 10px;
             border: 3px solid #00ff00;
             text-align: center;
             z-index: 1000;
             box-shadow: 0 0 30px rgba(0, 255, 0, 0.5);
+            max-width: 90%;
+            max-height: 90%;
+            overflow-y: auto;
         }
 
         .game-over h2 {
             color: #00ff00;
-            font-size: 2.5em;
-            margin-bottom: 20px;
+            font-size: clamp(1.8em, 6vw, 2.5em);
+            margin-bottom: 15px;
             text-shadow: 0 0 10px #00ff00;
         }
 
         .game-over p {
             color: #fff;
-            font-size: 1.2em;
+            font-size: clamp(0.9em, 3vw, 1.2em);
             margin: 10px 0;
         }
 
         .game-over button {
             margin-top: 20px;
-            padding: 10px 30px;
-            font-size: 1.1em;
+            padding: clamp(10px 20px, 2vw 4vw, 15px 30px);
+            font-size: clamp(0.9em, 2.5vw, 1.1em);
             background: #00ff00;
             color: #000;
             border: none;
@@ -126,17 +187,71 @@
             cursor: pointer;
             font-weight: bold;
             transition: all 0.3s;
+            width: 100%;
+            max-width: 200px;
         }
 
-        .game-over button:hover {
+        .game-over button:active {
             background: #00cc00;
             box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+        }
+
+        /* Tablet and larger screens */
+        @media (min-width: 768px) {
+            .container {
+                gap: 20px;
+                padding: 20px;
+            }
+
+            #gameCanvas {
+                max-width: 800px;
+            }
+
+            .info {
+                display: block;
+            }
+        }
+
+        /* Landscape mode adjustments */
+        @media (orientation: landscape) {
+            .container {
+                flex-direction: row;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            h1 {
+                order: 1;
+                flex-basis: 100%;
+                margin-bottom: 0;
+            }
+
+            .scoreboard {
+                order: 2;
+                width: auto;
+                min-width: 200px;
+            }
+
+            #gameCanvas {
+                order: 3;
+                flex-grow: 1;
+                min-height: 300px;
+            }
+
+            .info {
+                order: 4;
+                flex-basis: 100%;
+            }
+
+            .mobile-controls {
+                order: 5;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🎮 PONG GAME 🎮</h1>
+        <h1>🎮 PONG 🎮</h1>
         
         <div class="scoreboard">
             <div class="score-item">
@@ -144,16 +259,21 @@
                 <div class="score-value" id="playerScore">0</div>
             </div>
             <div class="score-item">
-                <div class="score-label">COMPUTER</div>
+                <div class="score-label">AI</div>
                 <div class="score-value" id="computerScore">0</div>
             </div>
         </div>
 
         <canvas id="gameCanvas" width="800" height="400"></canvas>
 
+        <div class="mobile-controls" id="mobileControls">
+            <button class="control-btn" id="upBtn">⬆️ UP</button>
+            <button class="control-btn" id="downBtn">⬇️ DOWN</button>
+        </div>
+
         <div class="info">
-            <p>Use <span class="highlight">MOUSE</span> or <span class="highlight">ARROW KEYS</span> to control the left paddle</p>
-            <p>Press <span class="highlight">SPACE</span> to start/pause the game</p>
+            <p><span class="highlight">SPACE</span> to start/pause</p>
+            <p id="controlInfo">Use <span class="highlight">ARROW KEYS</span> or <span class="highlight">MOUSE</span></p>
             <p>First to <span class="highlight">5 points</span> wins!</p>
         </div>
     </div>
@@ -165,9 +285,46 @@
     </div>
 
     <script>
+        // Detect device type
+        const isMobile = () => {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        };
+
+        const isTouch = () => {
+            return window.matchMedia("(pointer: coarse)").matches || isMobile();
+        };
+
+        // Setup mobile controls
+        const mobileControls = document.getElementById('mobileControls');
+        const controlInfo = document.getElementById('controlInfo');
+        
+        if (isTouch()) {
+            mobileControls.classList.add('active');
+            controlInfo.innerHTML = 'Use <span class="highlight">BUTTONS</span> or tilt device';
+        }
+
         // Canvas setup
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
+
+        // Handle canvas resizing for responsive design
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            const containerWidth = Math.min(window.innerWidth - 20, 800);
+            const containerHeight = containerWidth / 2;
+
+            canvas.width = 800;
+            canvas.height = 400;
+
+            const displayWidth = containerWidth;
+            const displayHeight = containerHeight;
+
+            canvas.style.width = displayWidth + 'px';
+            canvas.style.height = displayHeight + 'px';
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
 
         // Game states
         const gameState = {
@@ -211,7 +368,10 @@
         // Input handling
         const keys = {};
         let mouseY = canvas.height / 2;
+        let upPressed = false;
+        let downPressed = false;
 
+        // Keyboard events
         window.addEventListener('keydown', (e) => {
             keys[e.key] = true;
             if (e.key === ' ') {
@@ -224,14 +384,41 @@
             keys[e.key] = false;
         });
 
+        // Mouse events
         canvas.addEventListener('mousemove', (e) => {
             const rect = canvas.getBoundingClientRect();
-            mouseY = e.clientY - rect.top;
+            mouseY = e.clientY - rect.top * (canvas.height / rect.height);
         });
+
+        // Touch events
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const rect = canvas.getBoundingClientRect();
+            const scaleY = canvas.height / rect.height;
+            mouseY = (touch.clientY - rect.top) * scaleY;
+        }, { passive: false });
+
+        // Mobile button controls
+        const upBtn = document.getElementById('upBtn');
+        const downBtn = document.getElementById('downBtn');
+
+        upBtn?.addEventListener('touchstart', () => { upPressed = true; });
+        upBtn?.addEventListener('touchend', () => { upPressed = false; });
+        downBtn?.addEventListener('touchstart', () => { downPressed = true; });
+        downBtn?.addEventListener('touchend', () => { downPressed = false; });
+
+        // Gyroscope/Accelerometer support
+        let accelY = 0;
+        if (window.DeviceOrientationEvent) {
+            window.addEventListener('deviceorientation', (e) => {
+                accelY = e.gamma || 0;
+            });
+        }
 
         // Update player paddle position
         function updatePlayer() {
-            // Arrow keys
+            // Keyboard controls
             if (keys['ArrowUp'] || keys['w'] || keys['W']) {
                 player.y -= player.speed;
             }
@@ -239,13 +426,26 @@
                 player.y += player.speed;
             }
 
-            // Mouse control
+            // Mobile button controls
+            if (upPressed) {
+                player.y -= player.speed;
+            }
+            if (downPressed) {
+                player.y += player.speed;
+            }
+
+            // Mouse/Touch control
             if (Math.abs(mouseY - (player.y + player.height / 2)) > 15) {
                 if (mouseY < player.y + player.height / 2) {
                     player.y -= player.speed;
                 } else {
                     player.y += player.speed;
                 }
+            }
+
+            // Accelerometer control (subtle)
+            if (isTouch() && Math.abs(accelY) > 5) {
+                player.y += (accelY / 15) * player.speed;
             }
 
             // Boundary collision
@@ -292,10 +492,9 @@
             ) {
                 ball.dx = Math.abs(ball.dx);
                 ball.x = player.x + player.width + ball.radius;
-                // Add angle based on where ball hits paddle
                 const deltaY = ball.y - (player.y + player.height / 2);
                 ball.dy = deltaY * 0.1;
-                ball.dx += 1; // Slightly increase speed
+                ball.dx += 1;
             }
 
             if (
@@ -305,10 +504,9 @@
             ) {
                 ball.dx = -Math.abs(ball.dx);
                 ball.x = computer.x - ball.radius;
-                // Add angle based on where ball hits paddle
                 const deltaY = ball.y - (computer.y + computer.height / 2);
                 ball.dy = deltaY * 0.1;
-                ball.dx -= 1; // Slightly increase speed
+                ball.dx -= 1;
             }
 
             // Score points
@@ -361,23 +559,15 @@
         }
 
         function draw() {
-            // Clear canvas
             drawRect(0, 0, canvas.width, canvas.height, '#000');
-
-            // Draw net
             drawNet();
-
-            // Draw paddles
             drawRect(player.x, player.y, player.width, player.height, '#00ff00');
             drawRect(computer.x, computer.y, computer.width, computer.height, '#00ff00');
-
-            // Draw ball
             drawCircle(ball.x, ball.y, ball.radius, '#00ff00');
 
-            // Draw start message
             if (!gameState.playing) {
                 ctx.fillStyle = 'rgba(0, 255, 0, 0.5)';
-                ctx.font = 'bold 24px Arial';
+                ctx.font = 'bold ' + Math.max(16, canvas.width / 30) + 'px Arial';
                 ctx.textAlign = 'center';
                 ctx.fillText('PRESS SPACE TO START', canvas.width / 2, 40);
             }
@@ -425,6 +615,14 @@
 
         // Start the game loop
         gameLoop();
+
+        // Prevent default touch behaviors
+        document.addEventListener('touchmove', (e) => {
+            if (e.target === canvas) {
+                e.preventDefault();
+            }
+        }, { passive: false });
     </script>
 </body>
-  </html>
+            </html>
+    
